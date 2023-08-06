@@ -12,18 +12,23 @@ type SmartContract struct {
 }
 
 type MedsData struct {
-	BatchNo             string    `json:"batchNo"`
-	WarehouseNo         string    `json:"warehouseNo"`
-	IotId               string    `json:"iotId"`
-	TemperatureSensorId string    `json:"temperatureSensorId"`
-	HumiditySensorId    string    `json:"humiditySensorId"`
-	Timestamp           string `json:"timestamp"`
-	Temperature         float64   `json:"temperature"`
-	Humidity            float64   `json:"humidity"`
+	UniqueKey           string  `json:"uniqueKey"`
+	BatchNo             string  `json:"batchNo"`
+	WarehouseNo         string  `json:"warehouseNo"`
+	IotId               string  `json:"iotId"`
+	TemperatureSensorId string  `json:"temperatureSensorId"`
+	HumiditySensorId    string  `json:"humiditySensorId"`
+	Timestamp           string  `json:"timestamp"`
+	Temperature         float64 `json:"temperature"`
+	Humidity            float64 `json:"humidity"`
 }
 
 func (s *SmartContract) CreateMedsData(ctx contractapi.TransactionContextInterface, batchNo string, warehouseNo string, iotId string, temperatureSensorId string, humiditySensorId string, timestamp string, temperature float64, humidity float64) error {
+	// Create a unique key based on the batchNo and timestamp
+	uniqueKey := fmt.Sprintf("%s_%s", batchNo, timestamp)
+
 	data := MedsData{
+		UniqueKey:           uniqueKey, // Set the unique key
 		BatchNo:             batchNo,
 		WarehouseNo:         warehouseNo,
 		IotId:               iotId,
@@ -38,7 +43,8 @@ func (s *SmartContract) CreateMedsData(ctx contractapi.TransactionContextInterfa
 		return err
 	}
 
-	return ctx.GetStub().PutState(batchNo, dataJSON)
+	// Use the unique key for the PutState call
+	return ctx.GetStub().PutState(uniqueKey, dataJSON)
 }
 
 func (s *SmartContract) ReadMedsData(ctx contractapi.TransactionContextInterface, id string) (*MedsData, error) {
